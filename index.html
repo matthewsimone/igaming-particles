@@ -8,9 +8,16 @@
       padding: 0;
       overflow: hidden;
       background: #0d0d0d;
+      height: 100%;
+      width: 100%;
     }
     canvas {
       display: block;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
     }
   </style>
 </head>
@@ -20,14 +27,15 @@
   <script>
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
-    let particlesArray;
+    let particlesArray = [];
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    window.addEventListener('resize', function() {
+    function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
       init();
     });
 
@@ -35,17 +43,16 @@
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 8 + 4; // thick particles
+        this.size = Math.random() * 8 + 4;
         this.speedX = (Math.random() - 0.5) * 2;
         this.speedY = (Math.random() - 0.5) * 2;
-        this.color = '#00ffcc'; // teal-green color
+        this.color = '#00ffcc';
       }
 
       update() {
         this.x += this.speedX;
         this.y += this.speedY;
 
-        // Bounce off walls
         if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
         if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
       }
@@ -59,7 +66,7 @@
     }
 
     function connectParticles() {
-      const maxDistance = 150;
+      let maxDistance = 150;
       for (let a = 0; a < particlesArray.length; a++) {
         for (let b = a + 1; b < particlesArray.length; b++) {
           const dx = particlesArray[a].x - particlesArray[b].x;
@@ -68,7 +75,7 @@
 
           if (distance < maxDistance) {
             const opacity = 1 - distance / maxDistance;
-            ctx.strokeStyle = `rgba(0, 255, 204, ${opacity})`; // teal-green lines with fade
+            ctx.strokeStyle = `rgba(0, 255, 204, ${opacity})`;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -81,6 +88,7 @@
 
     function init() {
       particlesArray = [];
+      resizeCanvas();
       for (let i = 0; i < 100; i++) {
         particlesArray.push(new Particle());
       }
@@ -88,14 +96,15 @@
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-        particlesArray[i].draw();
+      for (let particle of particlesArray) {
+        particle.update();
+        particle.draw();
       }
       connectParticles();
       requestAnimationFrame(animate);
     }
 
+    // Initialize on load
     init();
     animate();
   </script>
