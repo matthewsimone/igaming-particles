@@ -8,16 +8,9 @@
       padding: 0;
       overflow: hidden;
       background: #0d0d0d;
-      height: 100%;
-      width: 100%;
     }
     canvas {
       display: block;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
     }
   </style>
 </head>
@@ -27,15 +20,14 @@
   <script>
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
-    let particlesArray = [];
+    let particlesArray;
 
-    function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', function() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', () => {
-      resizeCanvas();
       init();
     });
 
@@ -65,19 +57,16 @@
       }
     }
 
-    function connectParticles() {
-      let maxDistance = 150;
+    function connect() {
       for (let a = 0; a < particlesArray.length; a++) {
         for (let b = a + 1; b < particlesArray.length; b++) {
-          const dx = particlesArray[a].x - particlesArray[b].x;
-          const dy = particlesArray[a].y - particlesArray[b].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < maxDistance) {
-            const opacity = 1 - distance / maxDistance;
-            ctx.strokeStyle = `rgba(0, 255, 204, ${opacity})`;
-            ctx.lineWidth = 2;
+          let dx = particlesArray[a].x - particlesArray[b].x;
+          let dy = particlesArray[a].y - particlesArray[b].y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 150) {
             ctx.beginPath();
+            ctx.strokeStyle = '#00ffcc';
+            ctx.lineWidth = 1;
             ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
             ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
             ctx.stroke();
@@ -88,7 +77,6 @@
 
     function init() {
       particlesArray = [];
-      resizeCanvas();
       for (let i = 0; i < 100; i++) {
         particlesArray.push(new Particle());
       }
@@ -96,15 +84,14 @@
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let particle of particlesArray) {
-        particle.update();
-        particle.draw();
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+        particlesArray[i].draw();
       }
-      connectParticles();
+      connect();
       requestAnimationFrame(animate);
     }
 
-    // Initialize on load
     init();
     animate();
   </script>
