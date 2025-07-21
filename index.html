@@ -1,60 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Particle Background</title>
+  <title>iGaming Interactive</title>
   <style>
-    html, body {
-      margin: 0; padding: 0; height: 100%; overflow: hidden;
-      background-color: #0d0d0d;
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0d0d0d;
     }
-    #tsparticles {
-      width: 100vw; height: 100vh;
-      position: fixed; top: 0; left: 0;
-      z-index: 0;
+    canvas {
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div id="tsparticles"></div>
+  <canvas id="particles"></canvas>
 
-  <!-- tsParticles Library -->
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
   <script>
-    tsParticles.load("tsparticles", {
-      background: {
-        color: "#0d0d0d"
-      },
-      fpsLimit: 60,
-      interactivity: {
-        events: {
-          onHover: { enable: true, mode: "repulse" },
-          resize: true
-        },
-        modes: { repulse: { distance: 100, duration: 0.4 } }
-      },
-      particles: {
-        color: { value: "#00ffcc" },
-        links: {
-          color: "#00ffcc",
-          distance: 150,
-          enable: true,
-          opacity: 0.4,
-          width: 1
-        },
-        move: {
-          enable: true,
-          speed: 1.5,
-          outModes: { default: "bounce" }
-        },
-        number: { value: 80, density: { enable: true, area: 800 } },
-        opacity: { value: 0.5 },
-        shape: { type: "circle" },
-        size: { value: { min: 1, max: 3 } }
-      },
-      detectRetina: true
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', function() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      init();
     });
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 8 + 4; // thicker
+        this.speedX = (Math.random() - 0.5) * 2;
+        this.speedY = (Math.random() - 0.5) * 2;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`; // colorful/playful
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Bounce off walls
+        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    function init() {
+      particlesArray = [];
+      for (let i = 0; i < 100; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+        particlesArray[i].draw();
+      }
+      requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
   </script>
 </body>
 </html>
