@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>iGaming Interactive</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teal Particle Animation</title>
   <style>
-    body, html {
+    html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #0d0d0d;
+      background-color: #000; /* Full black */
     }
+
     canvas {
       display: block;
     }
@@ -20,31 +23,36 @@
   <script>
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
-    let particlesArray;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       init();
     });
 
+    const particleCount = 100;
+    const particles = [];
+    const maxDistance = 150;
+    const teal = '#00ffcc';
+
     class Particle {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 8 + 4;
-        this.speedX = (Math.random() - 0.5) * 2;
-        this.speedY = (Math.random() - 0.5) * 2;
-        this.color = '#00ffcc';
+        this.size = Math.random() * 4 + 2;
+        this.speedX = (Math.random() - 0.5) * 1.5;
+        this.speedY = (Math.random() - 0.5) * 1.5;
+        this.color = teal;
       }
 
       update() {
         this.x += this.speedX;
         this.y += this.speedY;
 
+        // Bounce off edges
         if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
         if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
       }
@@ -57,18 +65,20 @@
       }
     }
 
-    function connect() {
-      for (let a = 0; a < particlesArray.length; a++) {
-        for (let b = a + 1; b < particlesArray.length; b++) {
-          let dx = particlesArray[a].x - particlesArray[b].x;
-          let dy = particlesArray[a].y - particlesArray[b].y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < 150) {
-            ctx.beginPath();
-            ctx.strokeStyle = '#00ffcc';
+    function connectParticles() {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a + 1; b < particles.length; b++) {
+          const dx = particles[a].x - particles[b].x;
+          const dy = particles[a].y - particles[b].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < maxDistance) {
+            const opacity = 1 - distance / maxDistance;
+            ctx.strokeStyle = `rgba(0, 255, 204, ${opacity})`;
             ctx.lineWidth = 1;
-            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
             ctx.stroke();
           }
         }
@@ -76,19 +86,22 @@
     }
 
     function init() {
-      particlesArray = [];
-      for (let i = 0; i < 100; i++) {
-        particlesArray.push(new Particle());
+      particles.length = 0;
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
       }
     }
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-        particlesArray[i].draw();
+
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
       }
-      connect();
+
+      connectParticles();
+
       requestAnimationFrame(animate);
     }
 
