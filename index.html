@@ -9,57 +9,55 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #000; /* Black background */
+      background-color: black;
+      width: 100%;
+      height: 100%;
     }
-
     canvas {
       display: block;
     }
   </style>
 </head>
 <body>
-  <canvas id="particles"></canvas>
-
+  <canvas id="particle-canvas"></canvas>
   <script>
-    const canvas = document.getElementById('particles');
+    const canvas = document.getElementById('particle-canvas');
     const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    let particleCount;
+
+    function setParticleCount() {
+      if (window.innerWidth < 768) {
+        particleCount = 60; // Mobile: unchanged
+      } else {
+        particleCount = 200; // Desktop: doubled
+      }
     }
 
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      init();
-    });
-
-    resizeCanvas();
-
-    // Responsive settings
-    let scaleFactor = window.innerWidth / 1440;
-    scaleFactor = Math.min(Math.max(scaleFactor, 0.5), 1.5); // clamp between 0.5 and 1.5
-
-    const particleCount = Math.floor(80 * scaleFactor);
-    const maxDistance = 130 * scaleFactor;
+    setParticleCount();
 
     class Particle {
       constructor() {
+        this.reset();
+        this.size = Math.random() * 2 + 1; // Restored small size
+        this.color = '#00ffcc';
+      }
+
+      reset() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 3 + 1.5;
-        this.speedX = (Math.random() - 0.5) * 1.2;
-        this.speedY = (Math.random() - 0.5) * 1.2;
-        this.color = '#00ffcc'; // teal
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = (Math.random() - 0.5) * 1.5;
       }
 
       update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
+        this.x += this.vx;
+        this.y += this.vy;
 
-        // Bounce off edges
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        if (this.x <= 0 || this.x >= canvas.width) this.vx *= -1;
+        if (this.y <= 0 || this.y >= canvas.height) this.vy *= -1;
       }
 
       draw() {
@@ -70,29 +68,23 @@
       }
     }
 
-    let particlesArray = [];
-
-    function init() {
-      particlesArray = [];
-      for (let i = 0; i < particleCount; i++) {
-        particlesArray.push(new Particle());
-      }
+    let particles = [];
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
     }
 
-    function connectParticles() {
-      for (let a = 0; a < particlesArray.length; a++) {
-        for (let b = a + 1; b < particlesArray.length; b++) {
-          const dx = particlesArray[a].x - particlesArray[b].x;
-          const dy = particlesArray[a].y - particlesArray[b].y;
+    function drawLines() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < maxDistance) {
-            const opacity = 1 - distance / maxDistance;
-            ctx.strokeStyle = `rgba(0, 255, 204, ${opacity})`;
-            ctx.lineWidth = 1;
+          if (distance < 100) {
             ctx.beginPath();
-            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+            ctx.strokeStyle = '#00ffcc';
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
           }
         }
@@ -101,16 +93,25 @@
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particlesArray.forEach(p => {
+      particles.forEach(p => {
         p.update();
         p.draw();
       });
-      connectParticles();
+      drawLines();
       requestAnimationFrame(animate);
     }
 
-    init();
     animate();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      setParticleCount();
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    });
   </script>
 </body>
 </html>
