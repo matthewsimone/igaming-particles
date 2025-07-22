@@ -9,7 +9,7 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #000;
+      background: #000; /* Black background */
     }
 
     canvas {
@@ -36,19 +36,12 @@
 
     resizeCanvas();
 
-    // Responsive scaling
-    const baseParticleCount = 80;
-    const baseMaxDistance = 130;
+    // Responsive settings
+    let scaleFactor = window.innerWidth / 1440;
+    scaleFactor = Math.min(Math.max(scaleFactor, 0.5), 1.5); // clamp between 0.5 and 1.5
 
-    function getScalingFactor() {
-      const width = window.innerWidth;
-      if (width <= 480) return 0.9;
-      if (width <= 768) return 1.0;
-      if (width <= 1024) return 1.2;
-      return 1.5; // More density on large desktops
-    }
-
-    let particlesArray = [];
+    const particleCount = Math.floor(80 * scaleFactor);
+    const maxDistance = 130 * scaleFactor;
 
     class Particle {
       constructor() {
@@ -57,13 +50,14 @@
         this.size = Math.random() * 3 + 1.5;
         this.speedX = (Math.random() - 0.5) * 1.2;
         this.speedY = (Math.random() - 0.5) * 1.2;
-        this.color = '#00ffcc';
+        this.color = '#00ffcc'; // teal
       }
 
       update() {
         this.x += this.speedX;
         this.y += this.speedY;
 
+        // Bounce off edges
         if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
         if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
       }
@@ -76,19 +70,16 @@
       }
     }
 
+    let particlesArray = [];
+
     function init() {
       particlesArray = [];
-      const scale = getScalingFactor();
-      const particleCount = Math.floor(baseParticleCount * scale);
       for (let i = 0; i < particleCount; i++) {
         particlesArray.push(new Particle());
       }
     }
 
     function connectParticles() {
-      const scale = getScalingFactor();
-      const maxDistance = baseMaxDistance * scale;
-
       for (let a = 0; a < particlesArray.length; a++) {
         for (let b = a + 1; b < particlesArray.length; b++) {
           const dx = particlesArray[a].x - particlesArray[b].x;
