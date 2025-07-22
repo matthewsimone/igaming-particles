@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>iGaming Interactive</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #000;
+      background-color: #0d0d0d;
+      height: 100%;
+      width: 100%;
     }
 
     canvas {
@@ -21,42 +23,25 @@
   <canvas id="particles"></canvas>
 
   <script>
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
 
-    function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      init();
+      initParticles();
     });
-
-    resizeCanvas();
-
-    // Responsive scaling
-    const baseParticleCount = 80;
-    const baseMaxDistance = 130;
-
-    function getScalingFactor() {
-      const width = window.innerWidth;
-      if (width <= 480) return 0.9;
-      if (width <= 768) return 1.0;
-      if (width <= 1024) return 1.2;
-      return 1.5; // More density on large desktops
-    }
-
-    let particlesArray = [];
 
     class Particle {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 3 + 1.5;
-        this.speedX = (Math.random() - 0.5) * 1.2;
-        this.speedY = (Math.random() - 0.5) * 1.2;
+        this.size = Math.random() * 8 + 4;
+        this.speedX = (Math.random() - 0.5) * 2;
+        this.speedY = (Math.random() - 0.5) * 2;
         this.color = '#00ffcc';
       }
 
@@ -64,8 +49,8 @@
         this.x += this.speedX;
         this.y += this.speedY;
 
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
       }
 
       draw() {
@@ -76,19 +61,29 @@
       }
     }
 
-    function init() {
+    let particlesArray = [];
+
+    function initParticles() {
       particlesArray = [];
-      const scale = getScalingFactor();
-      const particleCount = Math.floor(baseParticleCount * scale);
-      for (let i = 0; i < particleCount; i++) {
+
+      const screenWidth = window.innerWidth;
+      let numParticles;
+
+      if (screenWidth < 768) {
+        // Mobile
+        numParticles = 60;
+      } else {
+        // Desktop - doubled the previous value
+        numParticles = 200;
+      }
+
+      for (let i = 0; i < numParticles; i++) {
         particlesArray.push(new Particle());
       }
     }
 
     function connectParticles() {
-      const scale = getScalingFactor();
-      const maxDistance = baseMaxDistance * scale;
-
+      const maxDistance = 150;
       for (let a = 0; a < particlesArray.length; a++) {
         for (let b = a + 1; b < particlesArray.length; b++) {
           const dx = particlesArray[a].x - particlesArray[b].x;
@@ -96,8 +91,7 @@
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < maxDistance) {
-            const opacity = 1 - distance / maxDistance;
-            ctx.strokeStyle = `rgba(0, 255, 204, ${opacity})`;
+            ctx.strokeStyle = '#00ffcc';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -118,7 +112,7 @@
       requestAnimationFrame(animate);
     }
 
-    init();
+    initParticles();
     animate();
   </script>
 </body>
